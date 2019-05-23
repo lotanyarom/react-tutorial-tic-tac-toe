@@ -43,6 +43,7 @@ class Game extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      started: false,
       history: [
         {
           squares: Array(9).fill(null),
@@ -88,6 +89,24 @@ class Game extends React.Component {
     });
   }
 
+
+  startGame() {
+    this.setState({started: true});
+  }
+
+  newGame() {
+    this.setState({
+      started: true,
+      history: [
+        {
+          squares: Array(9).fill(null),
+        },
+      ],
+      currentStepNumber: 0,
+      xIsNext: true,
+    });
+  }
+
   render() {
     const { history } = this.state;
     const current = history[this.state.currentStepNumber];
@@ -116,8 +135,11 @@ class Game extends React.Component {
       status = `Next player: ${this.state.xIsNext ? 'X' : 'O'}`;
     }
 
+    const {started} = this.state;
+
     return (
-      <div className="game">
+      <div>
+      { started ? (<div className="game">
         <div className="game-board">
           <Board
             squares={current.squares}
@@ -127,11 +149,14 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{status}</div>
-          <button className="button" onClick={() => this.sortMoves()}>
-            Sort moves
-          </button>
-          <ol>{moves}</ol>
+         
         </div>
+        {winnerRow && (<button onClick={i => this.newGame(i)}>New Game</button>)}
+      </div>
+      
+      ) :
+      (<button onClick={i => this.startGame(i)}>Start Game</button>)
+      }
       </div>
     );
   }
