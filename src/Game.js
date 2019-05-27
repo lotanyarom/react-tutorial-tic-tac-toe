@@ -16,11 +16,11 @@ const calculateWinner = (squares) => {
   for (let i = 0; i < lines.length; i += 1) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return { winner: squares[a], winnerRow: lines[i] };
+      return {winner: squares[a], winnerRow: lines[i]};
     }
   }
 
-  return { winner: null, winnerRow: null };
+  return {winner: null, winnerRow: null};
 };
 
 const getLocation = (move) => {
@@ -51,6 +51,7 @@ class Game extends React.Component {
       ],
       currentStepNumber: 0,
       xIsNext: true,
+      winHistory: {"X": 0, "O": 0}
     };
   }
 
@@ -83,19 +84,21 @@ class Game extends React.Component {
     });
   }
 
-  sortMoves() {
-    this.setState({
-      history: this.state.history.reverse(),
-    });
-  }
-
-
   startGame() {
     this.setState({started: true});
   }
 
   newGame() {
+    const {history} = this.state;
+    const current = history[this.state.currentStepNumber];
+    const {winner} = calculateWinner(current.squares);
+    debugger;
+    let {winHistory} = this.state;
+    let newWinCount = this.state.winHistory[winner] + 1;
+    winHistory[winner] = newWinCount;
+
     this.setState({
+      winHistory,
       started: true,
       history: [
         {
@@ -108,9 +111,9 @@ class Game extends React.Component {
   }
 
   render() {
-    const { history } = this.state;
+    const {history} = this.state;
     const current = history[this.state.currentStepNumber];
-    const { winner, winnerRow } = calculateWinner(current.squares);
+    const {winner, winnerRow} = calculateWinner(current.squares);
 
     const moves = history.map((step, move) => {
       const currentLocation = step.currentLocation ? `(${step.currentLocation})` : '';
@@ -118,11 +121,11 @@ class Game extends React.Component {
       const classButton = move === this.state.currentStepNumber ? 'button--green' : '';
 
       return (
-        <li key={step.stepNumber}>
-          <button className={`${classButton} button`} onClick={() => this.jumpTo(move)}>
-            {`${desc} ${currentLocation}`}
-          </button>
-        </li>
+          <li key={step.stepNumber}>
+            <button className={`${classButton} button`} onClick={() => this.jumpTo(move)}>
+              {`${desc} ${currentLocation}`}
+            </button>
+          </li>
       );
     });
 
@@ -138,26 +141,43 @@ class Game extends React.Component {
     const {started} = this.state;
 
     return (
-      <div>
-      { started ? (<div className="game">
-        <div className="game-board">
-          <Board
-            squares={current.squares}
-            winnerSquares={winnerRow}
-            onClick={i => this.handleClick(i)}
-          />
+        <div>
+          <h1>Tic Tac Toe</h1>
+
+          {started ? (
+                  <div className="game">
+                    <div className="game-board">
+                      <Board
+                          squares={current.squares}
+                          winnerSquares={winnerRow}
+                          onClick={i => this.handleClick(i)}
+                      />
+                    </div>
+                    <div className="game-info">
+                      <div>{status}</div>
+                      <table>
+                        <tr>
+                          <th>Player</th>
+                          <th>Number Wins</th>
+                        </tr>
+                        {Object.keys(this.state.winHistory).map(key => {
+                          return (
+                              <tr>
+                                <td>{key}</td>
+                                <td>{this.state.winHistory[key]}</td>
+                              </tr>
+                          )
+                        })}
+                      </table>
+                    </div>
+                    {winnerRow && (<button onClick={i => this.newGame(i)}>New Game</button>)}
+                  </div>
+
+              ) :
+
+              (<button onClick={i => this.startGame(i)}>Start Game</button>)
+          }
         </div>
-        <div className="game-info">
-          <div>{status}</div>
-         
-        </div>
-        {winnerRow && (<button onClick={i => this.newGame(i)}>New Game</button>)}
-      </div>
-      
-      ) :
-      (<button onClick={i => this.startGame(i)}>Start Game</button>)
-      }
-      </div>
     );
   }
 }
